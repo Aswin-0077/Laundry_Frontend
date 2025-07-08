@@ -38,4 +38,14 @@ export const disposeItem = async (item: any) => {
     console.error('Error disposing item:', error);
     throw error;
   }
+};
+
+export const deleteLinenItem = async (id: number) => {
+  try {
+    await axios.delete(`${BASE_URL}/Wash-Item-Data/${id}`);
+    return true;
+  } catch (error) {
+    console.error('Error deleting linen item:', error);
+    throw error;
+  }
 }; 

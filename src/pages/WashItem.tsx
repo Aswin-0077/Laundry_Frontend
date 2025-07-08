@@ -13,6 +13,7 @@ import { MdLocalLaundryService } from 'react-icons/md';
 import { FaTruckMoving } from 'react-icons/fa';
 import { useNavigate } from "react-router-dom";
 import '../App.css'
+import { toast } from "react-toastify";
 
 interface WashItemProps {
     sidebarCollapsed?: boolean;
@@ -137,7 +138,6 @@ const WashItem: React.FC<WashItemProps> = ({ sidebarCollapsed = false, toggleSid
     setSelectedMachine('');
     setTimeTaken('');
   };
-
   // Move item to OutsideWashedItems and remove from washedLinenItems
   const handleOutsideWash = async (row: any) => {
     // Add to OutsideWashedItems
@@ -149,6 +149,7 @@ const WashItem: React.FC<WashItemProps> = ({ sidebarCollapsed = false, toggleSid
     // Remove from washedLinenItems
     await fetch(`http://192.168.50.253:3001/washedLinenItems/${row.id}`, { method: 'DELETE' });
     setData(data.filter((item: any) => item.id !== row.id));
+    toast.success('Item successfully sent for outside wash!');
     navigate('/outside-wash');
   };
 

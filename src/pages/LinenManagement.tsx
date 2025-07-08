@@ -5,13 +5,14 @@ import SectionHeading from "../components/SectionHeading";
 import PageContainer from "../components/PageContainer";
 import Table from "../components/Table";
 import { useNavigate } from "react-router-dom";
-import { washItem, getWashedItems, disposeItem } from "../services/api";
+import { washItem, getWashedItems, disposeItem, deleteLinenItem } from "../services/api";
 import "../../db.json"; // Import db.json to ensure it's included in the build
 import Searchbar from "../components/Searchbar";
 import { MdLocalLaundryService } from 'react-icons/md';
 import { FaSoap } from 'react-icons/fa';
 // import Dispose from '../assets/delete.png'
 import DeleteButton from "../components/DeleteButton";
+import { toast } from "react-toastify";
 
 
 interface LinenManagementProps {
@@ -56,20 +57,24 @@ const LinenManagement: React.FC<LinenManagementProps> = ({ sidebarCollapsed = fa
   const handleWash = async (row: any) => {
     try {
       await washItem(row);
+      toast.success('Item successfully sent for washing!');
       navigate('/wash-items');
     } catch (error) {
       console.error('Failed to wash item:', error);
-      alert('Item already sent for washing. Please wait for it to be processed.');
+      toast.error('Item already sent for washing. Please wait for it to be processed.');
     }
   };
 
   const handleDispose = async (row: any) => {
     try {
       await disposeItem(row);
+      await deleteLinenItem(row.id);
+      setData(prevData => prevData.filter((item: any) => item.id !== row.id));
+      toast.success('Item successfully disposed of!');
       navigate('/dispose-items');
     } catch (error) {
       console.error('Failed to dispose item:', error);
-      alert('Failed to dispose item.');
+      toast.success('Failed to dispose item.');
     }
   };
 
@@ -94,11 +99,10 @@ const LinenManagement: React.FC<LinenManagementProps> = ({ sidebarCollapsed = fa
         {!isWashing && (
           <button
             className="icon-btn dispose"
-            onClick={() => handleDispose(row)}
             aria-label="Dispose"
             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
-            <span title="Dispose"><DeleteButton /></span>
+            <span title="Dispose"><DeleteButton onClick={() => handleDispose(row)}/></span>
           </button>
         )}
       </>
