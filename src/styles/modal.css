@@ -1,0 +1,17 @@
+.modal-content {
+  border-radius: 8px !important;
+  padding: 0 !important;
+  background: #fff !important;
+}
+
+.modal-header, .modal-footer {
+  border: none !important;
+}
+
+.modal-title {
+  font-weight: 600;
+}
+
+.modal-body {
+  padding: 24px !important;
+} 
