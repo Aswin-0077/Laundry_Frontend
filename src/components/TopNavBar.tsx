@@ -121,7 +121,7 @@ const TopNavBar: React.FC = () => {
             </li>
             <li className='nav-link'>
               <NavLink
-                to="/insurance"
+                to="/"
                 className={({ isActive }) => isActive ? 'active' : ''}
                 style={{ fontSize: '14px', fontWeight: 400,color:'#cccccc' }}
               >
@@ -130,7 +130,7 @@ const TopNavBar: React.FC = () => {
             </li>
             <li className='nav-link'>
               <NavLink
-                to="/documents"
+                to="/"
                 className={({ isActive }) => isActive ? 'active' : ''}
                 style={{ fontSize: '14px', fontWeight: 400,color:'#cccccc' }}
               >
@@ -139,7 +139,7 @@ const TopNavBar: React.FC = () => {
             </li>
             <li className='nav-link'>
               <NavLink
-                to="/documents"
+                to="/"
                 className={({ isActive }) => isActive ? 'active' : ''}
                 style={{ fontSize: '14px', fontWeight: 400,color:'#cccccc' }}
               >
@@ -206,11 +206,11 @@ const TopNavBar: React.FC = () => {
           </div>
           <div className="nav-buttons">
             <li className='nav-list-button'><NavLink to="/dashboard" className={({ isActive }) => isActive ? 'active' : ''} style={{fontWeight:400}}>New Sale</NavLink></li>
-            <li className='nav-list-button'><NavLink to="/register-vehicle" className={({ isActive }) => isActive ? 'active' : ''} style={{fontWeight:400}}> <Plus size={16} /> Add Patient</NavLink></li>
+            <li className='nav-list-button'><NavLink to="/" className={({ isActive }) => isActive ? 'active' : ''} style={{fontWeight:400}}> <Plus size={16} /> Add Patient</NavLink></li>
           </div>
           <div className="nav-div-main">
             <div className="nav-div">
-              <a href="/vehicle-list" className="nav-link text-white" title="Vehicle List">
+              <a href="/" className="nav-link text-white" title="Vehicle List">
                 <i className="fa-solid fa-magnifying-glass "></i>
               </a>
             </div>

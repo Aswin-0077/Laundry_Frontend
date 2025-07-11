@@ -25,8 +25,8 @@ const SideBar: React.FC<SideBarProps> = ({ collapsed = false }) => {
   const menuItems = [
     { to: "/linen", label: "Linen Management", title: "Linen Management" },
     { to: "/wash-items", label: "Wash Item", title: "Wash Item" },
-    { to: "/dispose-items", label: "Dispose Item", title: "Dispose Item" },
     { to: "/outside-wash", label: "Outside Wash", title: "Outside Wash" },
+    { to: "/dispose-items", label: "Dispose Item", title: "Dispose Item" },
     { to: "/vendorMap", label: "VendorMapping", title: "VendorMapping" },
   ];
 
