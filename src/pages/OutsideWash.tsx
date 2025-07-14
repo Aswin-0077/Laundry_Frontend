@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+// import Header from "../components/Header";
+// import Footer from "../components/Footer";
 import SectionHeading from "../components/SectionHeading";
 import PageContainer from "../components/PageContainer";
 import Table from "../components/Table";
@@ -8,6 +8,7 @@ import ButtonWithGradient from "../components/ButtonWithGradient";
 import CustomModal from '../components/Modal';
 import Searchbar from "../components/Searchbar";
 import { FaMapMarkedAlt, FaPrint } from 'react-icons/fa';
+import CancelButton from "../components/CancelButton";
 
 interface OutsideWashProps {
     sidebarCollapsed?: boolean;
@@ -22,15 +23,15 @@ const columns = [
   { key: "washDurability", header: "Wash Durability" },
   { key: "sourceArea", header: "Source Area" },
   { key: "vendor", header: "Vendor" },
-  { key: "rate", header: "Rate" },
+  { key: "rate", header: "Rate(In Rs)" },
   { key: "status", header: "Status" },
-  { key: "time", header: "Time" },
-  { key: "actions", header: "Actions" }
+  { key: "time", header: "Time(In min)" }
+  // { key: "actions", header: "Actions" }
 ];
 
 const statusOptions = ["Pending", "In Progress", "Done"];
 
-const OutsideWash: React.FC<OutsideWashProps> = ({ sidebarCollapsed = false, toggleSidebar }) => {
+const OutsideWash: React.FC<OutsideWashProps> = () => {
   const [data, setData] = useState<any[]>([]);
   const [vendors, setVendors] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -154,7 +155,7 @@ const OutsideWash: React.FC<OutsideWashProps> = ({ sidebarCollapsed = false, tog
 
   return (
     <>
-      <Header sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} showDate showTime showCalculator />
+      {/* <Header sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} showDate showTime showCalculator /> */}
       <PageContainer>
         <SectionHeading title="Outside Wash" subtitle="Hospital Laundry Linen Management System" />
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
@@ -167,7 +168,8 @@ const OutsideWash: React.FC<OutsideWashProps> = ({ sidebarCollapsed = false, tog
           title="Map Vendor & Rate"
           footer={
             <>
-              <ButtonWithGradient text="Cancel" onClick={() => setShowModal(false)} />
+              {/* <ButtonWithGradient text="Cancel" onClick={() => setShowModal(false)} /> */}
+              <CancelButton text="Cancel" onClick={() => setShowModal(false)} />
               <ButtonWithGradient text="Save" onClick={handleSave} />
             </>
           }
@@ -207,7 +209,7 @@ const OutsideWash: React.FC<OutsideWashProps> = ({ sidebarCollapsed = false, tog
           </div>
         )}
       </PageContainer>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 };

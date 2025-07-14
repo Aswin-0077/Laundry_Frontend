@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+// import Header from "../components/Header";
+// import Footer from "../components/Footer";
 import SectionHeading from "../components/SectionHeading";
 import PageContainer from "../components/PageContainer";
 import Table from "../components/Table";
@@ -20,7 +20,7 @@ interface LinenManagementProps {
   toggleSidebar?: () => void;
 }
 
-const LinenManagement: React.FC<LinenManagementProps> = ({ sidebarCollapsed = false, toggleSidebar }) => {
+const LinenManagement: React.FC<LinenManagementProps> = () => {
   const navigate = useNavigate();
   const [columns, setColumns] = useState<any[]>([]);
   const [data, setData] = useState<any[]>([]);
@@ -123,13 +123,13 @@ const LinenManagement: React.FC<LinenManagementProps> = ({ sidebarCollapsed = fa
 
   return (
     <>
-      <Header sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} showDate showTime showCalculator />
+      {/* <Header sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} showDate showTime showCalculator /> */}
       <PageContainer>
         <SectionHeading title="Linen Management" subtitle="Hospital Laundry Linen Management System" />
         <Searchbar value={searchTerm} onChange={handleSearchChange}  />
         <Table columns={columns} data={filteredData} renderAction={renderAction} />         
       </PageContainer>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 };

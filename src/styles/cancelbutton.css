@@ -1,0 +1,24 @@
+.custom-red-btn {
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ff4d36;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 15px;
+    font-size: 14px;
+    font-weight: 400;
+    height: 36px;
+    box-shadow: none;
+    transition: background 0.2s;
+    white-space: nowrap;
+    
+}
+
+.custom-red-btn:hover,
+.custom-red-btn:focus {
+  background-color: #e0432e;   
+  color: #fff;
+}

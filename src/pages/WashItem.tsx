@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+// import Header from "../components/Header";
+// import Footer from "../components/Footer";
 import SectionHeading from "../components/SectionHeading";
 import PageContainer from "../components/PageContainer";
 import Table from "../components/Table";
@@ -14,6 +14,7 @@ import { FaTruckMoving } from 'react-icons/fa';
 import { useNavigate } from "react-router-dom";
 import '../App.css'
 import { toast } from "react-toastify";
+import CancelButton from "../components/CancelButton";
 
 interface WashItemProps {
     sidebarCollapsed?: boolean;
@@ -36,7 +37,7 @@ const configColumns = [
   { key: 'machine', header: 'Machine' }
 ];
 
-const WashItem: React.FC<WashItemProps> = ({ sidebarCollapsed = false, toggleSidebar }) => {
+const WashItem: React.FC<WashItemProps> = () => {
   const [data, setData] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [materialType, setMaterialType] = useState('');
@@ -210,9 +211,14 @@ const WashItem: React.FC<WashItemProps> = ({ sidebarCollapsed = false, toggleSid
       .includes(configSearchTerm.toLowerCase())
   );
 
+  // Find machines currently in use (washing)
+  const machinesInUse = data
+    .filter((item: any) => item.washing && item.machine)
+    .map((item: any) => item.machine);
+
   return (
     <>
-      <Header sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} showDate showTime showCalculator />
+      {/* <Header sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} showDate showTime showCalculator /> */}
       <PageContainer>
         <SectionHeading title="Washed Items" subtitle="Hospital Laundry Linen Management System" />
         {/* Washed Items Table with Search */}
@@ -245,10 +251,22 @@ const WashItem: React.FC<WashItemProps> = ({ sidebarCollapsed = false, toggleSid
           </div>
           <Table columns={configColumns} data={filteredConfigs} />
         </div>
+        
         {/* Modal for adding configuration */}
-        <CustomModal show={showModal} onHide={() => setShowModal(false)}  title="Add Detergent & Machine" footer={
+        <CustomModal show={showModal} onHide={() => {
+          setShowModal(false);
+          setMaterialType('');
+          setDetergent('');
+          setMachine('');
+        }}  title="Add Detergent & Machine" footer={
             <>
-              <ButtonWithGradient text="Cancel" onClick={() => setShowModal(false)} />
+              {/* <ButtonWithGradient text="Cancel" onClick={() => setShowModal(false)} /> */}
+              <CancelButton text="Cancel" onClick={() => {
+                setShowModal(false);
+                setMaterialType('');
+                setDetergent('');
+                setMachine('');
+              }} />  
               <ButtonWithGradient text="Save" onClick={handleSaveConfig} />
             </> } >
 
@@ -266,13 +284,11 @@ const WashItem: React.FC<WashItemProps> = ({ sidebarCollapsed = false, toggleSid
           </div>
           
         </CustomModal>
-        <CustomModal
-          show={showInsideWashModal}
-          onHide={() => setShowInsideWashModal(false)}
-          title="Inside Wash"
-          footer={
+
+        <CustomModal show={showInsideWashModal} onHide={() => setShowInsideWashModal(false)} title="Inside Wash" footer={
             <>
-              <ButtonWithGradient text="Cancel" onClick={() => setShowInsideWashModal(false)} />
+              {/* <ButtonWithGradient text="Cancel" onClick={() => setShowInsideWashModal(false)} /> */}
+              <CancelButton text="Cancel" onClick={() => setShowInsideWashModal(false)} />  
               <ButtonWithGradient text="Save" onClick={handleSaveInsideWash} />
             </>
           }
@@ -294,7 +310,15 @@ const WashItem: React.FC<WashItemProps> = ({ sidebarCollapsed = false, toggleSid
                 <label>Machine</label>
                 <select className="form-control" value={selectedMachine} onChange={e => setSelectedMachine(e.target.value)} required>
                   <option value="">Select Machine</option>
-                  {machineOptions.map((m) => <option key={m} value={m}>{m}</option>)}
+                  {machineOptions.map((m) => (
+                    <option
+                      key={m}
+                      value={m}
+                      disabled={machinesInUse.includes(m) && selectedItem?.machine !== m}
+                    >
+                      {m} {machinesInUse.includes(m) && selectedItem?.machine !== m ? "(In Use)" : ""}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div style={{ marginBottom: 16 }}>
@@ -305,7 +329,7 @@ const WashItem: React.FC<WashItemProps> = ({ sidebarCollapsed = false, toggleSid
           )}
         </CustomModal>
       </PageContainer>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 };

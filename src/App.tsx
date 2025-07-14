@@ -10,6 +10,8 @@ import VendorMapping from './pages/VendorMapping.tsx';
 import OutsideWash from './pages/OutsideWash.tsx';
 import DisposeItem from './pages/DisposeItem.tsx';
 import { ToastContainer } from 'react-toastify';
+import Header from './components/Header.tsx';
+import Footer from './components/Footer.tsx';
 
 
 const App: React.FC = () => {
@@ -30,6 +32,8 @@ const App: React.FC = () => {
           {/* <SideBar collapsed={sidebarCollapsed} /> */}
           <SideBar collapsed={sidebarCollapsed}/>
           <div style={{ flex: 1, padding: '10px', overflowY: 'auto' }}>
+          <Header sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} showDate showTime showCalculator />
+
             <Routes>
               {/* <Route path="/dashboard" element={<Page/>} /> */}
               <Route path="/home" element={<Home/>} />
@@ -39,6 +43,8 @@ const App: React.FC = () => {
               <Route path="/dispose-items" element={<DisposeItem sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar}/>} />
               <Route path="/vendorMap" element={<VendorMapping sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar}/>} />
             </Routes>
+            <Footer />
+
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import React from "react";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+// import Header from "../components/Header";
+// import Footer from "../components/Footer";
 import SectionHeading from "../components/SectionHeading";
 import PageContainer from "../components/PageContainer";
 import Table from "../components/Table";
@@ -15,7 +15,7 @@ interface DisposeItemProps {
 
 const BASE_URL = 'http://192.168.50.253:3001';
 
-const DisposeItem: React.FC<DisposeItemProps> = ({ sidebarCollapsed = false, toggleSidebar }) => {
+const DisposeItem: React.FC<DisposeItemProps> = () => {
   const [columns, setColumns] = useState<any[]>([]);
   const [data, setData] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -49,13 +49,13 @@ const DisposeItem: React.FC<DisposeItemProps> = ({ sidebarCollapsed = false, tog
 
   return (
     <>
-      <Header sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} showDate showTime showCalculator />
+      {/* <Header sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} showDate showTime showCalculator /> */}
       <PageContainer>
         <SectionHeading title="Dispose item"  subtitle="Hospital Laundry Linen Management System"  />
         <Searchbar value={searchTerm} onChange={handleSearchChange} />
         <Table columns={columns} data={filteredData} />
       </PageContainer>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 };

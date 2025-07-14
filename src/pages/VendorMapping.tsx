@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+// import Header from "../components/Header";
+// import Footer from "../components/Footer";
 import SectionHeading from "../components/SectionHeading";
 import PageContainer from "../components/PageContainer";
 import ButtonWithGradient from "../components/ButtonWithGradient";
@@ -11,23 +11,31 @@ import DeleteButton from '../components/DeleteButton';
 import '../App.css'
 import { toast } from "react-toastify";
 import Searchbar from "../components/Searchbar";
+import CancelButton from "../components/CancelButton";
+
 
 interface VendorMapProps {
     sidebarCollapsed?: boolean;
     toggleSidebar?: () => void;
 }
 
-const VendorMapping: React.FC<VendorMapProps> = ({ sidebarCollapsed = false, toggleSidebar }) => {
+const VendorMapping: React.FC<VendorMapProps> = () => {
   const [showVendorModal, setShowVendorModal] = useState(false);
   const [showRateModal, setShowRateModal] = useState(false);
   const [vendorName, setVendorName] = useState('');
-  const [vendorContact, setVendorContact] = useState('');
+  const [vendorContact, setVendorContact] = useState<string>('');
   const [vendorAddress, setVendorAddress] = useState('');
+  const [contactError, setContactError] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [addressError, setAddressError] = useState('');
   const [vendors, setVendors] = useState<any[]>([]);
   const [items, setItems] = useState<any[]>([]);
   const [selectedVendorId, setSelectedVendorId] = useState('');
   const [selectedItemId, setSelectedItemId] = useState('');
   const [rate, setRate] = useState('');
+  const [vendorError, setVendorError] = useState('');
+  const [itemError, setItemError] = useState('');
+  const [rateError, setRateError] = useState('');
   const [editVendor, setEditVendor] = useState<any>(null);
   const [editRate, setEditRate] = useState<any>(null);
   const [vendorSearch, setVendorSearch] = useState('');
@@ -49,6 +57,28 @@ const VendorMapping: React.FC<VendorMapProps> = ({ sidebarCollapsed = false, tog
 
   // Add Vendor
   const handleSaveVendor = async () => {
+    // Validate all fields
+    if (!vendorName.trim()) {
+      setNameError('Please enter vendor name');
+      return;
+    }
+    if (!vendorContact) {
+      setContactError('Please enter vendor contact');
+      return;
+    }
+    if (vendorContact.length !== 10) {
+      setContactError('Please enter exactly 10 digits for contact');
+      return;
+    }
+    if (!vendorAddress.trim()) {
+      setAddressError('Please enter vendor address');
+      return;
+    }
+
+    setNameError('');
+    setContactError('');
+    setAddressError('');
+
     if (editVendor) {
       // Update
       const updated = { ...editVendor, name: vendorName, contact: vendorContact, address: vendorAddress };
@@ -59,12 +89,12 @@ const VendorMapping: React.FC<VendorMapProps> = ({ sidebarCollapsed = false, tog
       });
       setVendors(vendors.map(v => v.id === editVendor.id ? updated : v));
       setEditVendor(null);
-      toast.success('Vendor updated successfully');
+      toast.info('Vendor updated successfully');
     } else {
       // Add
       const newVendor = {
         name: vendorName,
-        contact: vendorContact,
+        contact: Number(vendorContact),
         address: vendorAddress,
         rates: [],
         id: Date.now()
@@ -90,6 +120,28 @@ const VendorMapping: React.FC<VendorMapProps> = ({ sidebarCollapsed = false, tog
 
   // Save Rate (add or edit)
   const handleSaveRate = async () => {
+    // Validate all fields
+    if (!selectedVendorId) {
+      setVendorError('Please select a vendor');
+      return;
+    }
+    if (!selectedItemId) {
+      setItemError('Please select an item');
+      return;
+    }
+    if (!rate || isNaN(Number(rate))) {
+      setRateError('Please enter a valid rate');
+      return;
+    }
+    if (Number(rate) <= 0) {
+      setRateError('Rate must be greater than 0');
+      return;
+    }
+
+    setVendorError('');
+    setItemError('');
+    setRateError('');
+
     if (!selectedVendorId || !selectedItemId || !rate) return;
     const vendorIdx = vendors.findIndex(v => v.id === Number(selectedVendorId));
     if (vendorIdx === -1) return;
@@ -159,7 +211,7 @@ const VendorMapping: React.FC<VendorMapProps> = ({ sidebarCollapsed = false, tog
   const rateColumns = [
     { key: 'vendor', header: 'Vendor' },
     { key: 'item', header: 'Item' },
-    { key: 'rate', header: 'Rate' },
+    { key: 'rate', header: 'Rate(In Rs)' },
     { key: 'actions', header: 'Actions' }
   ];
   const filteredVendors = vendors.filter((v: any) =>
@@ -186,12 +238,24 @@ const VendorMapping: React.FC<VendorMapProps> = ({ sidebarCollapsed = false, tog
 
   return (
     <>
-      <Header sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} showDate showTime showCalculator />
+      {/* <Header sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} showDate showTime showCalculator /> */}
       <PageContainer>
         <SectionHeading title="Vendor Mapping" subtitle="Hospital Laundry Linen Management System" />
         <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
-          <ButtonWithGradient text="Add Vendor" onClick={() => setShowVendorModal(true)} />
-          <ButtonWithGradient text="Map Item Rate" onClick={() => setShowRateModal(true)} />
+          <ButtonWithGradient text="Add Vendor" onClick={() => {
+            setEditVendor(null);
+            setVendorName('');
+            setVendorContact('');
+            setVendorAddress('');
+            setShowVendorModal(true);
+          }} />
+          <ButtonWithGradient text="Map Item Rate" onClick={() => {
+            setEditRate(null);
+            setSelectedVendorId('');
+            setSelectedItemId('');
+            setRate('');
+            setShowRateModal(true);
+          }} />
         </div>
         <div className="sub-header">Vendors</div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop:"25px" ,marginBottom:"-25px"}}>
@@ -229,61 +293,173 @@ const VendorMapping: React.FC<VendorMapProps> = ({ sidebarCollapsed = false, tog
         }))} />
         <CustomModal
           show={showVendorModal}
-          onHide={() => { setShowVendorModal(false); setEditVendor(null); }}
+          onHide={() => {
+            setShowVendorModal(false);
+            setEditVendor(null);
+            setVendorName('');
+            setVendorContact('');
+            setVendorAddress('');
+          }}
           title={editVendor ? 'Edit Vendor' : 'Add Vendor'}
           footer={
             <>
-              <ButtonWithGradient text="Cancel" onClick={() => { setShowVendorModal(false); setEditVendor(null); }} />
+              {/* <ButtonWithGradient text="Cancel" onClick={() => { setShowVendorModal(false); setEditVendor(null); }} /> */}
+              <CancelButton text="Cancel" onClick={() => {
+                setShowVendorModal(false);
+                setEditVendor(null);
+                setVendorName('');
+                setVendorContact('');
+                setVendorAddress('');
+              }} />
               <ButtonWithGradient text="Save" onClick={handleSaveVendor} />
             </>
           }
         >
           <div style={{ marginBottom: 16 }}>
             <label>Name</label>
-            <input className="form-control" value={vendorName} onChange={e => setVendorName(e.target.value)} />
+            <input 
+              className={`form-control ${nameError ? 'is-invalid' : ''}`} 
+              value={vendorName} 
+              onChange={e => {
+                setVendorName(e.target.value);
+                if (e.target.value.trim()) {
+                  setNameError('');
+                }
+              }}
+            />
+            {nameError && <div className="invalid-feedback">{nameError}</div>}
           </div>
           <div style={{ marginBottom: 16 }}>
             <label>Contact</label>
-            <input className="form-control" value={vendorContact} onChange={e => setVendorContact(e.target.value)} />
+            <input
+              type="text"
+              value={vendorContact}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Only allow numbers
+                const numericValue = value.replace(/\D/g, '');
+                // Limit to 10 digits
+                if (numericValue.length > 10) {
+                  setContactError('Maximum 10 digits allowed');
+                } else {
+                  setVendorContact(numericValue);
+                  if (numericValue.length === 0) {
+                    setContactError('Please enter vendor contact');
+                  } else if (numericValue.length !== 10) {
+                    setContactError('Please enter exactly 10 digits');
+                  } else {
+                    setContactError('');
+                  }
+                }
+              }}
+              className={`form-control ${contactError ? 'is-invalid' : ''}`}
+              placeholder="10-digit contact number"
+              maxLength="10"
+            />
+            {contactError && <div className="invalid-feedback">{contactError}</div>}
           </div>
           <div style={{ marginBottom: 16 }}>
             <label>Address</label>
-            <input className="form-control" value={vendorAddress} onChange={e => setVendorAddress(e.target.value)} />
+            <input 
+              className={`form-control ${addressError ? 'is-invalid' : ''}`} 
+              value={vendorAddress} 
+              onChange={e => {
+                setVendorAddress(e.target.value);
+                if (e.target.value.trim()) {
+                  setAddressError('');
+                }
+              }}
+            />
+            {addressError && <div className="invalid-feedback">{addressError}</div>}
           </div>
         </CustomModal>
         {/* Map Item Rate Modal */}
         <CustomModal
           show={showRateModal}
-          onHide={() => { setShowRateModal(false); setEditRate(null); }}
+          onHide={() => {
+            setShowRateModal(false);
+            setEditRate(null);
+            setSelectedVendorId('');
+            setSelectedItemId('');
+            setRate('');
+          }}
           title={editRate ? 'Edit Item Rate' : 'Map Item Rate'}
           footer={
             <>
-              <ButtonWithGradient text="Cancel" onClick={() => { setShowRateModal(false); setEditRate(null); }} />
+              {/* <ButtonWithGradient text="Cancel" onClick={() => { setShowRateModal(false); setEditRate(null); }} /> */}
+              <CancelButton text="Cancel" onClick={() => {
+                setShowRateModal(false);
+                setEditRate(null);
+                setSelectedVendorId('');
+                setSelectedItemId('');
+                setRate('');
+              }} />
               <ButtonWithGradient text="Save" onClick={handleSaveRate} />
             </>
           }
         >
           <div style={{ marginBottom: 16 }}>
             <label>Vendor</label>
-            <select className="form-control" value={selectedVendorId} onChange={e => setSelectedVendorId(e.target.value)} disabled={!!editRate}>
+            <select 
+              value={selectedVendorId} 
+              onChange={e => {
+                setSelectedVendorId(e.target.value);
+                if (e.target.value) {
+                  setVendorError('');
+                }
+              }} 
+              className={`form-control ${vendorError ? 'is-invalid' : ''}`}
+            >
               <option value="">Select Vendor</option>
-              {vendors.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+              {vendors.map(vendor => (
+                <option key={vendor.id} value={vendor.id}>
+                  {vendor.name}
+                </option>
+              ))}
             </select>
+            {vendorError && <div className="invalid-feedback">{vendorError}</div>}
           </div>
           <div style={{ marginBottom: 16 }}>
             <label>Item</label>
-            <select className="form-control" value={selectedItemId} onChange={e => setSelectedItemId(e.target.value)} disabled={false}>
+            <select 
+              value={selectedItemId} 
+              onChange={e => {
+                setSelectedItemId(e.target.value);
+                if (e.target.value) {
+                  setItemError('');
+                }
+              }} 
+              className={`form-control ${itemError ? 'is-invalid' : ''}`}
+            >
               <option value="">Select Item</option>
-              {items.map(i => <option key={i.id} value={i.id}>{i.category}</option>)}
+              {items.map(item => (
+                <option key={item.id} value={item.id}>
+                  {item.category}
+                </option>
+              ))}
             </select>
+            {itemError && <div className="invalid-feedback">{itemError}</div>}
           </div>
           <div style={{ marginBottom: 16 }}>
             <label>Rate</label>
-            <input className="form-control" type="number" min={0} value={rate} onChange={e => setRate(e.target.value)} />
+            <input
+              type="number"
+              value={rate}
+              onChange={e => {
+                const value = e.target.value;
+                if (value === '' || Number(value) > 0) {
+                  setRate(value);
+                  setRateError('');
+                }
+              }}
+              className={`form-control ${rateError ? 'is-invalid' : ''}`}
+              placeholder="Enter rate in Rs"
+            />
+            {rateError && <div className="invalid-feedback">{rateError}</div>}
           </div>
         </CustomModal>
       </PageContainer>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 };
