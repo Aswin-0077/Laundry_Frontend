@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import '../App.css'
 import { toast } from "react-toastify";
 import CancelButton from "../components/CancelButton";
+import FormDateInput from "../components/Date";
 
 interface WashItemProps {
     sidebarCollapsed?: boolean;

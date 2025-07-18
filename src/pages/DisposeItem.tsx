@@ -26,7 +26,15 @@ const DisposeItem: React.FC<DisposeItemProps> = () => {
         const response = await axios.get(`${BASE_URL}/DisposeItems`);
         const dbRes = await fetch('/db.json');
         const db = await dbRes.json();
-        setColumns(db["Wash-Item-Header"] || []);
+        const columns = [
+          { key: "id", header: "ID" },
+          { key: "category", header: "Category" },
+          { key: "linenType", header: "Linen Type" },
+          { key: "fabricDensity", header: "Fabric Density" },
+          { key: "washDurability", header: "Wash Durability" },
+          { key: "sourceArea", header: "Source Area" },
+        ];
+        setColumns(columns);
         setData(response.data || []);
       } catch (err) {
         setColumns([]);

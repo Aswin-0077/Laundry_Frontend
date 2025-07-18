@@ -1,16 +1,8 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import "../styles/Sidebar.css";
-// import { GraphIcon } from '@primer/octicons-react'
-// import { PlusCircleIcon } from '@primer/octicons-react'
-// import { ListUnorderedIcon } from '@primer/octicons-react'
-// import { ReportIcon } from '@primer/octicons-react'
-// import { ShieldCheckIcon } from '@primer/octicons-react'
-// import { FileDirectoryIcon } from '@primer/octicons-react'
-// import { LocationIcon } from '@primer/octicons-react'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretRight } from "@fortawesome/free-solid-svg-icons";
-// import logo from '../assets/logo.png';
 import sidebarLogo from "../assets/sidebar-logo.jpg";
 import '../styles/sidebar.css'
 

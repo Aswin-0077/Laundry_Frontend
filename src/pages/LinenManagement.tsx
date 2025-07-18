@@ -13,6 +13,7 @@ import { FaSoap } from 'react-icons/fa';
 // import Dispose from '../assets/delete.png'
 import DeleteButton from "../components/DeleteButton";
 import { toast } from "react-toastify";
+import FormDateInput from "../components/Date";
 
 
 interface LinenManagementProps {
@@ -78,13 +79,24 @@ const LinenManagement: React.FC<LinenManagementProps> = () => {
     }
   };
 
+  const handleAlert = (row: any) => {
+    // Show confirmation dialog
+    const isConfirmed = window.confirm("Are you sure you want to send this item for washing?");
+    
+    // Only navigate if the user clicks "OK" (isConfirmed is true)
+    if (isConfirmed) {
+      handleWash(row);
+    } 
+    // If the user clicks "Cancel", nothing happens and they stay on the same page
+  };
+
   const renderAction = (row: any) => {
     const isWashing = washedIds.has(row.id);
     return (
       <>
         <button
           className={`icon-btn ${isWashing ? 'washing' : ''}`}
-          onClick={() => handleWash(row)}
+          onClick={() => handleAlert(row)} 
           disabled={isWashing}
           aria-label={isWashing ? 'Washing' : 'Wash'}
           style={{ background: 'none', border: 'none', cursor: isWashing ? 'not-allowed' : 'pointer', padding: 0, marginRight: 8 }}
@@ -126,7 +138,11 @@ const LinenManagement: React.FC<LinenManagementProps> = () => {
       {/* <Header sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} showDate showTime showCalculator /> */}
       <PageContainer>
         <SectionHeading title="Linen Management" subtitle="Hospital Laundry Linen Management System" />
-        <Searchbar value={searchTerm} onChange={handleSearchChange}  />
+        <div style={{display: 'flex', gap: 16}}>
+            <FormDateInput label="From date"/>
+            <FormDateInput label="To date"/>
+            <Searchbar value={searchTerm} onChange={handleSearchChange}  />
+        </div>
         <Table columns={columns} data={filteredData} renderAction={renderAction} />         
       </PageContainer>
       {/* <Footer /> */}
