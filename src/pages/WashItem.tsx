@@ -15,7 +15,9 @@ import { useNavigate } from "react-router-dom";
 import '../App.css'
 import { toast } from "react-toastify";
 import CancelButton from "../components/CancelButton";
-import FormDateInput from "../components/Date";
+// import FormDateInput from "../components/Date";
+// import Stepper from '../components/Stepper';
+import Breadcrumb from "../components/BreadCrumb";
 
 interface WashItemProps {
     sidebarCollapsed?: boolean;
@@ -53,6 +55,7 @@ const WashItem: React.FC<WashItemProps> = () => {
   const [selectedMachine, setSelectedMachine] = useState('');
   const [timeTaken, setTimeTaken] = useState('');
   const navigate = useNavigate();
+  const [activeStep, setActiveStep] = useState(0);
 
   // Helper to get unique detergents and machines from Detergents table
   const detergentOptions = Array.from(new Set(configurations.map((c: any) => c.detergent)));
@@ -222,35 +225,57 @@ const WashItem: React.FC<WashItemProps> = () => {
       {/* <Header sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} showDate showTime showCalculator /> */}
       <PageContainer>
         <SectionHeading title="Washed Items" subtitle="Hospital Laundry Linen Management System" />
-        {/* Washed Items Table with Search */}
-        
-        <div className="d-flex justify-content-between align-items-center mt-5" style={{ marginBottom: 16, gap: 16 }}>
-            <div style={{ textAlign: 'center' }}>
-              <ButtonWithGradient text="Add Detergent & Machine" onClick={() => setShowModal(true)} />
+        {/* <Stepper
+          steps={[{ label: 'Wash Item' }, { label: 'Material Configuration' }]}
+          activeStep={activeStep}
+          onStepClick={setActiveStep}
+        /> */}
+        <Breadcrumb 
+        steps={[{ label: 'Wash Item' }, { label: 'Material Configuration' }]}
+        activeStep={activeStep} onStepClick={setActiveStep}/>
+        {activeStep === 0 && (
+          <>
+            <div className="d-flex justify-content-between align-items-center" style={{ marginBottom: '-10px', gap: 16 }}>
+              <Searchbar value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
             </div>
-
-            <div style={{ flex: 1, maxWidth: 350 }}>
-            <Searchbar value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-            </div>
+            <Table columns={dynamicColumns} data={filteredData} renderAction={renderAction} />
             
-          </div>
-        <Table columns={dynamicColumns} data={filteredData} renderAction={renderAction} />
+          </>
+        )}
+        {activeStep === 1 && (
+          <>
+            {/* <div className="sub-header">Material Configurations</div> */}
+            <div className="d-flex justify-content-between align-items-center mt-3" style={{ marginBottom: 16, gap: 16 }}>
+              <div style={{ textAlign: 'center' }}>
+                <ButtonWithGradient text="Add Detergent & Machine" onClick={() => setShowModal(true)} />
+              </div>
+              <div style={{ flex: 1, maxWidth: 350 }}>
+                <Searchbar value={configSearchTerm} onChange={e => setConfigSearchTerm(e.target.value)} />
+              </div>
+            </div>
+            <Table columns={configColumns} data={filteredConfigs} />
+            
+          </>
+        )}
         {/* Section for adding detergents and machines */}
         <div style={{ marginTop: 40 }}>
 
           {/* <SectionHeading  title="Material Configurations" subtitle="Hospital Laundry Linen Management System" /> */}
-          <div className="sub-header">Material Configurations</div>
+          {/* <div className="sub-header">Material Configurations</div> */}
 
 
-          <div className="d-flex justify-content-between align-items-center mt-3" style={{ marginBottom: 16, gap: 16 }}>
+          {/* <div className="d-flex justify-content-between align-items-center mt-3" style={{ marginBottom: 16, gap: 16 }}> */}
+            {/* <div style={{ textAlign: 'center' }}> */}
+              {/* <ButtonWithGradient text="Add Detergent & Machine" onClick={() => setShowModal(true)} /> */}
+            {/* </div> */}
            
 
             {/* <div style={{ flex: 1, maxWidth: 350 }}> */}
-              <Searchbar value={configSearchTerm} onChange={e => setConfigSearchTerm(e.target.value)} />
+              {/* <Searchbar value={configSearchTerm} onChange={e => setConfigSearchTerm(e.target.value)} /> */}
             {/* </div> */}
             
-          </div>
-          <Table columns={configColumns} data={filteredConfigs} />
+          {/* </div> */}
+          {/* <Table columns={configColumns} data={filteredConfigs} /> */}
         </div>
         
         {/* Modal for adding configuration */}
@@ -272,15 +297,15 @@ const WashItem: React.FC<WashItemProps> = () => {
             </> } >
 
           <div style={{ marginBottom: 16 }}>
-            <label>Material Type</label>
+            <label style={{fontSize:'14px'}}>Material Type</label>
             <input type="text" value={materialType} onChange={e => setMaterialType(e.target.value)} className="form-control" />
           </div>
           <div style={{ marginBottom: 16 }}>
-            <label>Detergent</label>
+            <label style={{fontSize:'14px'}}>Detergent</label>
             <input type="text" value={detergent} onChange={e => setDetergent(e.target.value)} className="form-control" />
           </div>
           <div style={{ marginBottom: 16 }}>
-            <label>Machine</label>
+            <label style={{fontSize:'14px'}}>Machine</label>
             <input type="text" value={machine} onChange={e => setMachine(e.target.value)} className="form-control" />
           </div>
           

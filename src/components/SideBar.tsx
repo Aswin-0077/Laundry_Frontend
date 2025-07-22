@@ -77,6 +77,7 @@ const SideBar: React.FC<SideBarProps> = ({ collapsed = false }) => {
             </NavLink>
           </li>
           <ul className="sidebar-sublist">
+
             {/* <li>
               <NavLink
                 to="/home"
@@ -92,6 +93,7 @@ const SideBar: React.FC<SideBarProps> = ({ collapsed = false }) => {
                 {!collapsed && "Home"}
               </NavLink>
             </li> */}
+            
             {filteredMenuItems.map(item => (
               <li key={item.to}>
                 <NavLink

@@ -25,8 +25,8 @@ const columns = [
   { key: "vendor", header: "Vendor" },
   { key: "rate", header: "Rate(In Rs)" },
   { key: "status", header: "Status" },
-  { key: "time", header: "Time(In min)" }
-  // { key: "actions", header: "Actions" }
+  { key: "time", header: "Time(In min)" },
+  { key: "actions", header: "Actions" }
 ];
 
 const statusOptions = ["Pending", "In Progress", "Done"];
@@ -199,13 +199,21 @@ const OutsideWash: React.FC<OutsideWashProps> = () => {
         {/* Hidden print area */}
         {selectedRow && (
           <div style={{ display: 'none' }} ref={printRef}>
-            <h2>Bill</h2>
-            <p><b>Item:</b> {selectedRow.category}</p>
-            <p><b>Linen Type:</b> {selectedRow.linenType}</p>
-            <p><b>Vendor:</b> {selectedRow.vendor}</p>
-            <p><b>Rate:</b> {selectedRow.rate}</p>
-            <p><b>Status:</b> {selectedRow.status}</p>
-            <p><b>Time:</b> {selectedRow.time}</p>
+            <h2 style={{textAlign:'center'}}>Bill</h2>
+            <div style={{display:'flex',margin:'0px auto',padding:'10px',border:'1px solid #ccc',borderRadius:'8px'}}>
+              <div style={{flex:1, gap:'15px'}}>
+                <p><b>Item:</b> {selectedRow.category}</p>
+                <p><b>Linen Type:</b> {selectedRow.linenType}</p>
+              </div>
+              <div style={{flex:1, gap:'15px'}}>
+                <p><b>Vendor:</b> {selectedRow.vendor}</p>
+                <p><b>Rate:</b> {selectedRow.rate}</p>
+              </div>
+              <div style={{flex:1, gap:'15px'}}>
+                <p><b>Status:</b> {selectedRow.status}</p>
+                <p><b>Time:</b> {selectedRow.time}</p>
+              </div>
+            </div>
           </div>
         )}
       </PageContainer>

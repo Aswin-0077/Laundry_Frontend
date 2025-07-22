@@ -12,6 +12,7 @@ import '../App.css'
 import { toast } from "react-toastify";
 import Searchbar from "../components/Searchbar";
 import CancelButton from "../components/CancelButton";
+import Breadcrumb from '../components/Breadcrumb';
 
 
 interface VendorMapProps {
@@ -40,6 +41,7 @@ const VendorMapping: React.FC<VendorMapProps> = () => {
   const [editRate, setEditRate] = useState<any>(null);
   const [vendorSearch, setVendorSearch] = useState('');
   const [rateSearch, setRateSearch] = useState('');
+  const [activeStep, setActiveStep] = useState(0);
 
   useEffect(() => {
     fetch('http://192.168.50.253:3001/Vendors').then(res => res.json()).then(setVendors);
@@ -241,56 +243,70 @@ const VendorMapping: React.FC<VendorMapProps> = () => {
       {/* <Header sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} showDate showTime showCalculator /> */}
       <PageContainer>
         <SectionHeading title="Vendor Mapping" subtitle="Hospital Laundry Linen Management System" />
-        <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
-          <ButtonWithGradient text="Add Vendor" onClick={() => {
-            setEditVendor(null);
-            setVendorName('');
-            setVendorContact('');
-            setVendorAddress('');
-            setShowVendorModal(true);
-          }} />
-          <ButtonWithGradient text="Map Item Rate" onClick={() => {
-            setEditRate(null);
-            setSelectedVendorId('');
-            setSelectedItemId('');
-            setRate('');
-            setShowRateModal(true);
-          }} />
-        </div>
-        <div className="sub-header">Vendors</div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop:"25px" ,marginBottom:"-25px"}}>
-          <div style={{ maxWidth: 350, width: '100%' }}>
-            <Searchbar value={vendorSearch} onChange={e => setVendorSearch(e.target.value)} />
-          </div>
-        </div>
-        <Table columns={vendorColumns} data={filteredVendors.map(vendor => ({
-          ...vendor,
-          actions: (
-            <>
-              <div className="d-flex">
-                <EditButton onClick={() => handleEditVendor(vendor)} />
-                <DeleteButton onClick={() => handleDeleteVendor(vendor)} />
+        <Breadcrumb
+          steps={[{ label: 'Vendors' }, { label: 'Vendor-Item Rates' }]}
+          activeStep={activeStep}
+          onStepClick={setActiveStep}
+        />
+        {activeStep === 0 && (
+          <>
+            {/* <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}> */}
+                <ButtonWithGradient text="Add Vendor" onClick={() => {
+                  setEditVendor(null);
+                  setVendorName('');
+                  setVendorContact('');
+                  setVendorAddress('');
+                  setShowVendorModal(true);
+                }} />
+              
+            {/* </div> */}
+            {/* <div className="sub-header">Vendors</div> */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop:"25px" ,marginBottom:"-25px"}}>
+              <div style={{ maxWidth: 350, width: '100%' }}>
+                <Searchbar value={vendorSearch} onChange={e => setVendorSearch(e.target.value)} />
               </div>
-            </>
-          )
-        }))} />
-        <div className="sub-header" style={{ marginTop: 32 }}>Vendor-Item Rates</div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop:"25px" ,marginBottom:"-25px"}}>
-          <div style={{ maxWidth: 350, width: '100%' }}>
-            <Searchbar value={rateSearch} onChange={e => setRateSearch(e.target.value)} />
-          </div>
-        </div>
-        <Table columns={rateColumns} data={filteredRates.map(row => ({
-          ...row,
-          actions: (
-            <>
-              <div className="d-flex">
-                <EditButton onClick={() => handleEditRate(vendors.find(v => v.name === row.vendor), row.rateObj)} />
-                <DeleteButton onClick={() => handleDeleteRate(vendors.find(v => v.name === row.vendor), row.rateObj)} />
+            </div>
+            <Table columns={vendorColumns} data={filteredVendors.map(vendor => ({
+              ...vendor,
+              actions: (
+                <>
+                  <div className="d-flex">
+                    <EditButton onClick={() => handleEditVendor(vendor)} />
+                    <DeleteButton onClick={() => handleDeleteVendor(vendor)} />
+                  </div>
+                </>
+              )
+            }))} />
+          </>
+        )}
+        {activeStep === 1 && (
+          <>
+            {/* <div className="sub-header" style={{ marginTop: 32 }}>Vendor-Item Rates</div> */}
+            <ButtonWithGradient text="Map Item Rate" onClick={() => {
+                setEditRate(null);
+                setSelectedVendorId('');
+                setSelectedItemId('');
+                setRate('');
+                setShowRateModal(true);
+              }} />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop:"25px" ,marginBottom:"-25px"}}>
+              <div style={{ maxWidth: 350, width: '100%' }}>
+                <Searchbar value={rateSearch} onChange={e => setRateSearch(e.target.value)} />
               </div>
-            </>
-          )
-        }))} />
+            </div>
+            <Table columns={rateColumns} data={filteredRates.map(row => ({
+              ...row,
+              actions: (
+                <>
+                  <div className="d-flex">
+                    <EditButton onClick={() => handleEditRate(vendors.find(v => v.name === row.vendor), row.rateObj)} />
+                    <DeleteButton onClick={() => handleDeleteRate(vendors.find(v => v.name === row.vendor), row.rateObj)} />
+                  </div>
+                </>
+              )
+            }))} />
+          </>
+        )}
         <CustomModal
           show={showVendorModal}
           onHide={() => {
@@ -316,7 +332,7 @@ const VendorMapping: React.FC<VendorMapProps> = () => {
           }
         >
           <div style={{ marginBottom: 16 }}>
-            <label>Name</label>
+            <label style={{fontSize:'14px'}}>Name</label>
             <input 
               className={`form-control ${nameError ? 'is-invalid' : ''}`} 
               value={vendorName} 
@@ -330,7 +346,7 @@ const VendorMapping: React.FC<VendorMapProps> = () => {
             {nameError && <div className="invalid-feedback">{nameError}</div>}
           </div>
           <div style={{ marginBottom: 16 }}>
-            <label>Contact</label>
+            <label style={{fontSize:'14px'}}>Contact</label>
             <input
               type="text"
               value={vendorContact}
@@ -354,12 +370,12 @@ const VendorMapping: React.FC<VendorMapProps> = () => {
               }}
               className={`form-control ${contactError ? 'is-invalid' : ''}`}
               placeholder="10-digit contact number"
-              maxLength="10"
+              
             />
             {contactError && <div className="invalid-feedback">{contactError}</div>}
           </div>
           <div style={{ marginBottom: 16 }}>
-            <label>Address</label>
+            <label style={{fontSize:'14px'}}>Address</label>
             <input 
               className={`form-control ${addressError ? 'is-invalid' : ''}`} 
               value={vendorAddress} 
@@ -399,7 +415,7 @@ const VendorMapping: React.FC<VendorMapProps> = () => {
           }
         >
           <div style={{ marginBottom: 16 }}>
-            <label>Vendor</label>
+            <label style={{fontSize:'14px'}}>Vendor</label>
             <select 
               value={selectedVendorId} 
               onChange={e => {
@@ -420,7 +436,7 @@ const VendorMapping: React.FC<VendorMapProps> = () => {
             {vendorError && <div className="invalid-feedback">{vendorError}</div>}
           </div>
           <div style={{ marginBottom: 16 }}>
-            <label>Item</label>
+            <label style={{fontSize:'14px'}}>Item</label>
             <select 
               value={selectedItemId} 
               onChange={e => {
@@ -441,7 +457,7 @@ const VendorMapping: React.FC<VendorMapProps> = () => {
             {itemError && <div className="invalid-feedback">{itemError}</div>}
           </div>
           <div style={{ marginBottom: 16 }}>
-            <label>Rate</label>
+            <label style={{fontSize:'14px'}}>Rate</label>
             <input
               type="number"
               value={rate}
