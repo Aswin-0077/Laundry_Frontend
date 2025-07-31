@@ -44,8 +44,8 @@ const VendorMapping: React.FC<VendorMapProps> = () => {
   const [activeStep, setActiveStep] = useState(0);
 
   useEffect(() => {
-    fetch('http://192.168.50.253:3001/Vendors').then(res => res.json()).then(setVendors);
-    fetch('http://192.168.50.253:3001/Wash-Item-Data').then(res => res.json()).then(setItems);
+    fetch('http://192.168.50.253:3005/Vendors').then(res => res.json()).then(setVendors);
+    fetch('http://192.168.50.253:3005/Wash-Item-Data').then(res => res.json()).then(setItems);
   }, []);
 
   // Edit Vendor
@@ -84,7 +84,7 @@ const VendorMapping: React.FC<VendorMapProps> = () => {
     if (editVendor) {
       // Update
       const updated = { ...editVendor, name: vendorName, contact: vendorContact, address: vendorAddress };
-      await fetch(`http://192.168.50.253:3001/Vendors/${editVendor.id}`, {
+      await fetch(`http://192.168.50.253:3005/Vendors/${editVendor.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updated)
@@ -101,7 +101,7 @@ const VendorMapping: React.FC<VendorMapProps> = () => {
         rates: [],
         id: Date.now()
       };
-      await fetch('http://192.168.50.253:3001/Vendors', {
+      await fetch('http://192.168.50.253:3005/Vendors', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newVendor)
@@ -115,7 +115,7 @@ const VendorMapping: React.FC<VendorMapProps> = () => {
   // Delete Vendor
   const handleDeleteVendor = async (vendor: any) => {
     if (!window.confirm('Are you sure you want to delete this vendor?')) return;
-    await fetch(`http://192.168.50.253:3001/Vendors/${vendor.id}`, { method: 'DELETE' });
+    await fetch(`http://192.168.50.253:3005/Vendors/${vendor.id}`, { method: 'DELETE' });
     setVendors(vendors.filter(v => v.id !== vendor.id));
     toast.error('Vendor deleted successfully');
   };
@@ -167,7 +167,7 @@ const VendorMapping: React.FC<VendorMapProps> = () => {
         vendor.rates.push({ itemId: item.id, itemName: item.category, rate });
       }
     }
-    await fetch(`http://192.168.50.253:3001/Vendors/${vendor.id}`, {
+    await fetch(`http://192.168.50.253:3005/Vendors/${vendor.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ rates: vendor.rates })
@@ -193,7 +193,7 @@ const VendorMapping: React.FC<VendorMapProps> = () => {
   const handleDeleteRate = async (vendor: any, rateObj: any) => {
     if (!window.confirm('Are you sure you want to delete this rate mapping?')) return;
     const updatedRates = vendor.rates.filter((r: any) => r.itemId !== rateObj.itemId);
-    await fetch(`http://192.168.50.253:3001/Vendors/${vendor.id}`, {
+    await fetch(`http://192.168.50.253:3005/Vendors/${vendor.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ rates: updatedRates })
@@ -223,7 +223,7 @@ const VendorMapping: React.FC<VendorMapProps> = () => {
       .includes(vendorSearch.toLowerCase())
   );
   const rateTableData = vendors.flatMap(vendor =>
-    vendor.rates.map((r: any) => ({
+    (vendor.rates || []).map((r: any) => ({
       vendor: vendor.name,
       item: r.itemName,
       rate: r.rate,

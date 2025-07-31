@@ -36,7 +36,7 @@ const App: React.FC = () => {
 
             <Routes>
               {/* <Route path="/dashboard" element={<Page/>} /> */}
-              <Route path="/home" element={<Home/>} />
+              {/* <Route path="/" element={<Home/>} /> */}
               <Route path="/linen" element={<LinenManagement sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar}/>} />
               <Route path="/wash-items" element={<WashItem sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar}/>} />
               <Route path="/outside-wash" element={<OutsideWash sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar}/>} />

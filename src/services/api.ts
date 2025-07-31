@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Use the correct server's LAN IP address
-const BASE_URL = 'http://192.168.50.253:3001';
+const BASE_URL = 'http://192.168.50.253:3005';
 
 export const washItem = async (item: any) => {
   try {
@@ -22,7 +22,9 @@ export const getWashedItems = async () => {
     const response = await axios.get(`${BASE_URL}/washedLinenItems`);
     return response.data || [];
   } catch (error) {
+
     console.error('Error getting washed items:', error);
+    
     throw error;
   }
 };

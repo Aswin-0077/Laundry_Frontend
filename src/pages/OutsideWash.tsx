@@ -46,7 +46,7 @@ const OutsideWash: React.FC<OutsideWashProps> = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://192.168.50.253:3001/OutsideWashedItems');
+        const response = await fetch('http://192.168.50.253:3005/OutsideWashedItems');
         const items = await response.json();
         setData(items);
       } catch (err) {
@@ -57,7 +57,7 @@ const OutsideWash: React.FC<OutsideWashProps> = () => {
   }, []);
 
   useEffect(() => {
-    fetch('http://192.168.50.253:3001/Vendors').then(res => res.json()).then(setVendors);
+    fetch('http://192.168.50.253:3005/Vendors').then(res => res.json()).then(setVendors);
   }, []);
 
   // Open modal and prefill vendor/rate/status/time
@@ -90,7 +90,7 @@ const OutsideWash: React.FC<OutsideWashProps> = () => {
       status,
       time
     };
-    await fetch(`http://192.168.50.253:3001/OutsideWashedItems/${selectedRow.id}`, {
+    await fetch(`http://192.168.50.253:3005/OutsideWashedItems/${selectedRow.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updated)

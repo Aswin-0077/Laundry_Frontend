@@ -17,7 +17,8 @@ import { toast } from "react-toastify";
 import CancelButton from "../components/CancelButton";
 // import FormDateInput from "../components/Date";
 // import Stepper from '../components/Stepper';
-import Breadcrumb from "../components/BreadCrumb";
+import Breadcrumb from "../components/Breadcrumb";
+import EditButton from "../components/EditButton";
 
 interface WashItemProps {
     sidebarCollapsed?: boolean;
@@ -56,6 +57,13 @@ const WashItem: React.FC<WashItemProps> = () => {
   const [timeTaken, setTimeTaken] = useState('');
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editItem, setEditItem] = useState<any>(null);
+  const [editFields, setEditFields] = useState({
+    detergent: '',
+    machine: '',
+    timeTaken: '',
+  });
 
   // Helper to get unique detergents and machines from Detergents table
   const detergentOptions = Array.from(new Set(configurations.map((c: any) => c.detergent)));
@@ -92,7 +100,7 @@ const WashItem: React.FC<WashItemProps> = () => {
   useEffect(() => {
     const fetchConfigs = async () => {
       try {
-        const res = await fetch('http://192.168.50.253:3001/Detergents');
+        const res = await fetch('http://192.168.50.253:3005/Detergents');
         if (res.ok) {
           const configs = await res.json();
           setConfigurations(configs);
@@ -107,7 +115,7 @@ const WashItem: React.FC<WashItemProps> = () => {
   const handleSaveConfig = async () => {
     const newConfig = { materialType, detergent, machine };
     // Save to db.json in Detergents
-    await fetch('http://192.168.50.253:3001/Detergents', {
+    await fetch('http://192.168.50.253:3005/Detergents', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newConfig)
@@ -130,7 +138,7 @@ const WashItem: React.FC<WashItemProps> = () => {
       washing: true // Mark as being washed
     };
     // PATCH the item in washedLinenItems
-    await fetch(`http://192.168.50.253:3001/washedLinenItems/${selectedItem.id}`, {
+    await fetch(`http://192.168.50.253:3005/washedLinenItems/${selectedItem.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ detergent: selectedDetergent, machine: selectedMachine, timeTaken, washing: true })
@@ -146,29 +154,66 @@ const WashItem: React.FC<WashItemProps> = () => {
   // Move item to OutsideWashedItems and remove from washedLinenItems
   const handleOutsideWash = async (row: any) => {
     // Add to OutsideWashedItems
-    await fetch('http://192.168.50.253:3001/OutsideWashedItems', {
+    await fetch('http://192.168.50.253:3005/OutsideWashedItems', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(row)
     });
     // Remove from washedLinenItems
-    await fetch(`http://192.168.50.253:3001/washedLinenItems/${row.id}`, { method: 'DELETE' });
+    await fetch(`http://192.168.50.253:3005/washedLinenItems/${row.id}`, { method: 'DELETE' });
     setData(data.filter((item: any) => item.id !== row.id));
     toast.success('Item successfully sent for outside wash!');
     navigate('/outside-wash');
   };
 
+  // When edit button is clicked
+  const handleEditClick = (item: any) => {
+    setEditItem(item);
+    setEditFields({
+      detergent: item.detergent || '',
+      machine: item.machine || '',
+      timeTaken: item.timeTaken || '',
+    });
+    setShowEditModal(true);
+  };
+
+  // Save edited item
+  const handleEditSave = async () => {
+    if (!editItem) return;
+    const updated = {
+      ...editItem,
+      ...editFields,
+    };
+    // PATCH the item in washedLinenItems
+    await fetch(`http://192.168.50.253:3005/washedLinenItems/${editItem.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editFields)
+    });
+    // Update local state
+    setData(data.map((item: any) => item.id === editItem.id ? updated : item));
+    setShowEditModal(false);
+    setEditItem(null);
+  };
+
   const renderAction = (row: any) => {
     if (row.washing) {
       return (
+        <>
+
+        <div className="d-flex align-items-center">
         <button
-          className="icon-btn washing"
-          disabled
-          aria-label="Washing"
-          style={{ background: 'none', border: 'none', cursor: 'not-allowed', padding: 0 }}
-        >
-          <span title="Washing"><MdLocalLaundryService color="#0582ac" size={24} style={{ filter: 'drop-shadow(0 2px 4px #b3e0f7)' }} /></span>
-        </button>
+            className="icon-btn washing"
+            disabled
+            aria-label="Washing"
+            style={{ background: 'none', border: 'none', cursor: 'not-allowed', padding: 0, marginRight: 8 }}
+          >
+            <span title="Washing"><MdLocalLaundryService color="#0582ac" size={24} style={{ filter: 'drop-shadow(0 2px 4px #b3e0f7)' }} /></span>
+          </button>
+          <EditButton onClick={() => handleEditClick(row)} />
+        </div>
+          
+        </>
       );
     }
     return (
@@ -350,6 +395,72 @@ const WashItem: React.FC<WashItemProps> = () => {
               <div style={{ marginBottom: 16 }}>
                 <label>Time Taken (minutes)</label>
                 <input className="form-control" type="number" value={timeTaken} onChange={e => setTimeTaken(e.target.value)} min={1} required />
+              </div>
+            </>
+          )}
+        </CustomModal>
+
+        {/* Edit Modal */}
+        <CustomModal
+          show={showEditModal}
+          onHide={() => {
+            setShowEditModal(false);
+            setEditItem(null);
+          }}
+          title="Edit Wash Item"
+          footer={
+            <>
+              <CancelButton text="Cancel" onClick={() => {
+                setShowEditModal(false);
+                setEditItem(null);
+              }} />
+              <ButtonWithGradient text="Save" onClick={handleEditSave} />
+            </>
+          }
+        >
+          {editItem && (
+            <>
+              <div style={{ marginBottom: 16 }}>
+                <label>Detergent</label>
+                <select
+                  className="form-control"
+                  value={editFields.detergent}
+                  onChange={e => setEditFields({ ...editFields, detergent: e.target.value })}
+                  required
+                >
+                  <option value="">Select Detergent</option>
+                  {detergentOptions.map((d) => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label>Machine</label>
+                <select
+                  className="form-control"
+                  value={editFields.machine}
+                  onChange={e => setEditFields({ ...editFields, machine: e.target.value })}
+                  required
+                >
+                  <option value="">Select Machine</option>
+                  {machineOptions.map((m) => (
+                    <option
+                      key={m}
+                      value={m}
+                      disabled={machinesInUse.includes(m) && editItem?.machine !== m}
+                    >
+                      {m} {machinesInUse.includes(m) && editItem?.machine !== m ? "(In Use)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label>Time Taken (minutes)</label>
+                <input
+                  className="form-control"
+                  type="number"
+                  value={editFields.timeTaken}
+                  onChange={e => setEditFields({ ...editFields, timeTaken: e.target.value })}
+                  min={1}
+                />
               </div>
             </>
           )}

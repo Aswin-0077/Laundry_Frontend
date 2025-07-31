@@ -13,7 +13,7 @@ interface DisposeItemProps {
     toggleSidebar?: () => void;
 }
 
-const BASE_URL = 'http://192.168.50.253:3001';
+const BASE_URL = 'http://localhost:3005';
 
 const DisposeItem: React.FC<DisposeItemProps> = () => {
   const [columns, setColumns] = useState<any[]>([]);
@@ -35,7 +35,7 @@ const DisposeItem: React.FC<DisposeItemProps> = () => {
           { key: "sourceArea", header: "Source Area" },
         ];
         setColumns(columns);
-        setData(response.data || []);
+        setData(Array.isArray(response.data) ? response.data : []);
       } catch (err) {
         setColumns([]);
         setData([]);
