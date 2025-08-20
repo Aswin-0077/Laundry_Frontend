@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 // import Header from "../components/Header";
 // import Footer from "../components/Footer";
 import SectionHeading from "../components/SectionHeading";
@@ -6,14 +6,14 @@ import PageContainer from "../components/PageContainer";
 import Table from "../components/Table";
 import { useNavigate } from "react-router-dom";
 import { washItem, getWashedItems, disposeItem, deleteLinenItem } from "../services/api";
-import "../../db.json"; // Import db.json to ensure it's included in the build
+import "../../db.json"; 
 import Searchbar from "../components/Searchbar";
 import { MdLocalLaundryService } from 'react-icons/md';
 import { FaSoap } from 'react-icons/fa';
-// import Dispose from '../assets/delete.png'
 import DeleteButton from "../components/DeleteButton";
 import { toast } from "react-toastify";
 import FormDateInput from "../components/Date";
+
 
 
 interface LinenManagementProps {
@@ -82,11 +82,11 @@ const LinenManagement: React.FC<LinenManagementProps> = () => {
   const handleAlert = (row: any) => {
     // Show confirmation dialog
     const isConfirmed = window.confirm("Are you sure you want to send this item for washing?");
-    
+
     // Only navigate if the user clicks "OK" (isConfirmed is true)
     if (isConfirmed) {
       handleWash(row);
-    } 
+    }
     // If the user clicks "Cancel", nothing happens and they stay on the same page
   };
 
@@ -96,7 +96,7 @@ const LinenManagement: React.FC<LinenManagementProps> = () => {
       <>
         <button
           className={`icon-btn ${isWashing ? 'washing' : ''}`}
-          onClick={() => handleAlert(row)} 
+          onClick={() => handleAlert(row)}
           disabled={isWashing}
           aria-label={isWashing ? 'Washing' : 'Wash'}
           style={{ background: 'none', border: 'none', cursor: isWashing ? 'not-allowed' : 'pointer', padding: 0, marginRight: 8 }}
@@ -114,7 +114,7 @@ const LinenManagement: React.FC<LinenManagementProps> = () => {
             aria-label="Dispose"
             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
-            <span title="Dispose"><DeleteButton onClick={() => handleDispose(row)}/></span>
+            <span title="Dispose"><DeleteButton onClick={() => handleDispose(row)} /></span>
           </button>
         )}
       </>
@@ -125,25 +125,69 @@ const LinenManagement: React.FC<LinenManagementProps> = () => {
     setSearchTerm(e.target.value);
   };
 
-  // Filter data based on search term
-  const filteredData = data.filter((item: any) =>
-    Object.values(item)
+  const [selectedSource, setSelectedSource] = useState<string>('');
+
+  // Get unique source areas for the filter
+  const sourceAreas = useMemo(() => {
+    const areas = new Set<string>();
+    data.forEach((item: any) => {
+      if (item.sourceArea) {
+        areas.add(item.sourceArea);
+      }
+    });
+    return Array.from(areas).sort().map(area => ({
+      label: area,
+      value: area
+    }));
+  }, [data]);
+
+  // Filter data based on search term and source area
+  const filteredData = data.filter((item: any) => {
+    const matchesSearch = Object.values(item)
       .join(' ')
       .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  );
+      .includes(searchTerm.toLowerCase());
+    
+    const matchesSource = !selectedSource || item.sourceArea === selectedSource;
+    
+    return matchesSearch && matchesSource;
+  });
 
   return (
     <>
       {/* <Header sidebarCollapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} showDate showTime showCalculator /> */}
       <PageContainer>
         <SectionHeading title="Linen Management" subtitle="Hospital Laundry Linen Management System" />
-        <div style={{display: 'flex', gap: 16}}>
-            <FormDateInput label="From date"/>
-            <FormDateInput label="To date"/>
-            <Searchbar value={searchTerm} onChange={handleSearchChange}  />
+        <div style={{ display: 'flex', gap: 16, marginBottom: 16, alignItems: 'flex-end' }}>
+          <FormDateInput label="From date" />
+          <FormDateInput label="To date" />
+
+          <div style={{ minWidth: '200px' }}>
+            <select 
+              value={selectedSource}
+              onChange={(e) => setSelectedSource(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                border: '1px solid #ced4da',
+                fontSize: '14px',
+                backgroundColor: '#fff'
+              }}
+            >
+              <option value="">All Source Areas</option>
+              {sourceAreas.map((area) => (
+                <option key={area.value} value={area.value}>
+                  {area.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+
+          <Searchbar value={searchTerm} onChange={handleSearchChange} />
         </div>
-        <Table columns={columns} data={filteredData} renderAction={renderAction} />         
+        <Table columns={columns} data={filteredData} renderAction={renderAction} />
       </PageContainer>
       {/* <Footer /> */}
     </>
