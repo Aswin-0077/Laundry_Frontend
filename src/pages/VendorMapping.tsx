@@ -81,35 +81,81 @@ const VendorMapping: React.FC<VendorMapProps> = () => {
     setContactError('');
     setAddressError('');
 
-    if (editVendor) {
-      // Update
-      const updated = { ...editVendor, name: vendorName, contact: vendorContact, address: vendorAddress };
-      await fetch(`http://192.168.50.253:3005/Vendors/${editVendor.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated)
-      });
-      setVendors(vendors.map(v => v.id === editVendor.id ? updated : v));
-      setEditVendor(null);
-      toast.info('Vendor updated successfully');
-    } else {
-      // Add
-      const newVendor = {
-        name: vendorName,
-        contact: Number(vendorContact),
-        address: vendorAddress,
-        rates: [],
-        id: Date.now()
-      };
-      await fetch('http://192.168.50.253:3005/Vendors', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newVendor)
-      });
-      setVendors([...vendors, newVendor]);
+    try {
+      if (editVendor) {
+        // Update
+        const updated = { 
+          name: vendorName, 
+          contact: vendorContact, 
+          address: vendorAddress,
+          rates: editVendor.rates || []
+        };
+        
+        console.log('Updating vendor:', editVendor.id, 'with data:', updated);
+        
+        const response = await fetch(`http://192.168.50.253:3005/Vendors/${editVendor.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updated)
+        });
+        
+        console.log('Update response status:', response.status);
+        
+        if (!response.ok) {
+          const errorData = await response.text();
+          console.error('Update failed:', errorData);
+          toast.error('Failed to update vendor: ' + errorData);
+          return;
+        }
+        
+        const responseData = await response.json();
+        console.log('Update response data:', responseData);
+        
+        setVendors(vendors.map(v => v.id === editVendor.id ? responseData : v));
+        setEditVendor(null);
+        toast.success('Vendor updated successfully');
+      } else {
+        // Add
+        const newVendor = {
+          name: vendorName,
+          contact: vendorContact, // Keep as string to match backend expectation
+          address: vendorAddress,
+          rates: [],
+          id: Date.now()
+        };
+        
+        console.log('Creating new vendor:', newVendor);
+        
+        const response = await fetch('http://192.168.50.253:3005/Vendors', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newVendor)
+        });
+        
+        console.log('Create response status:', response.status);
+        
+        if (!response.ok) {
+          const errorData = await response.text();
+          console.error('Create failed:', errorData);
+          toast.error('Failed to create vendor: ' + errorData);
+          return;
+        }
+        
+        const responseData = await response.json();
+        console.log('Create response data:', responseData);
+        
+        setVendors([...vendors, responseData]);
+        toast.success('Vendor created successfully');
+      }
+      
+      setShowVendorModal(false);
+      setVendorName(''); 
+      setVendorContact(''); 
+      setVendorAddress('');
+    } catch (error) {
+      console.error('Error saving vendor:', error);
+      toast.error('Network error: ' + error.message);
     }
-    setShowVendorModal(false);
-    setVendorName(''); setVendorContact(''); setVendorAddress('');
   };
 
   // Delete Vendor
@@ -144,40 +190,74 @@ const VendorMapping: React.FC<VendorMapProps> = () => {
     setItemError('');
     setRateError('');
 
-    if (!selectedVendorId || !selectedItemId || !rate) return;
-    const vendorIdx = vendors.findIndex(v => v.id === Number(selectedVendorId));
-    if (vendorIdx === -1) return;
-    const vendor = vendors[vendorIdx];
-    const item = items.find(i => i.id === Number(selectedItemId));
-    if (!item) return;
-    // Edit logic: if editing, update the correct rate object (even if item changed)
-    if (editRate) {
-      // Remove the old rate object (by itemId)
-      const oldItemId = editRate.rateObj.itemId;
-      vendor.rates = vendor.rates.filter((r: any) => r.itemId !== Number(oldItemId));
-      // Add the new/updated rate object
-      vendor.rates.push({ itemId: item.id, itemName: item.category, rate });
-      toast.success('Rate updated successfully');
-    } else {
-      // Add or update logic for new mapping
-      const existingRateIdx = vendor.rates.findIndex((r: any) => r.itemId === item.id);
-      if (existingRateIdx !== -1) {
-        vendor.rates[existingRateIdx].rate = rate;
-      } else {
-        vendor.rates.push({ itemId: item.id, itemName: item.category, rate });
+    try {
+      const vendorIdx = vendors.findIndex(v => v.id === Number(selectedVendorId));
+      if (vendorIdx === -1) {
+        toast.error('Vendor not found');
+        return;
       }
+      
+      const vendor = { ...vendors[vendorIdx] };
+      const item = items.find(i => i.id === Number(selectedItemId));
+      if (!item) {
+        toast.error('Item not found');
+        return;
+      }
+
+      console.log('Saving rate for vendor:', vendor.id, 'item:', item.id, 'rate:', rate);
+      
+      // Edit logic: if editing, update the correct rate object (even if item changed)
+      if (editRate) {
+        // Remove the old rate object (by itemId)
+        const oldItemId = editRate.rateObj.itemId;
+        vendor.rates = vendor.rates.filter((r: any) => r.itemId !== Number(oldItemId));
+        // Add the new/updated rate object
+        vendor.rates.push({ itemId: item.id, itemName: item.category, rate });
+      } else {
+        // Add or update logic for new mapping
+        const existingRateIdx = vendor.rates.findIndex((r: any) => r.itemId === item.id);
+        if (existingRateIdx !== -1) {
+          vendor.rates[existingRateIdx].rate = rate;
+        } else {
+          vendor.rates.push({ itemId: item.id, itemName: item.category, rate });
+        }
+      }
+      
+      console.log('Updated vendor rates:', vendor.rates);
+      
+      const response = await fetch(`http://192.168.50.253:3005/Vendors/${vendor.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rates: vendor.rates })
+      });
+      
+      console.log('Rate update response status:', response.status);
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('Rate update failed:', errorData);
+        toast.error('Failed to update rate: ' + errorData);
+        return;
+      }
+      
+      const responseData = await response.json();
+      console.log('Rate update response data:', responseData);
+      
+      const newVendors = [...vendors];
+      newVendors[vendorIdx] = responseData;
+      setVendors(newVendors);
+      
+      setShowRateModal(false);
+      setSelectedVendorId(''); 
+      setSelectedItemId(''); 
+      setRate('');
+      setEditRate(null);
+      
+      toast.success(editRate ? 'Rate updated successfully' : 'Rate mapping created successfully');
+    } catch (error) {
+      console.error('Error saving rate:', error);
+      toast.error('Network error: ' + error.message);
     }
-    await fetch(`http://192.168.50.253:3005/Vendors/${vendor.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rates: vendor.rates })
-    });
-    const newVendors = [...vendors];
-    newVendors[vendorIdx] = { ...vendor };
-    setVendors(newVendors);
-    setShowRateModal(false);
-    setSelectedVendorId(''); setSelectedItemId(''); setRate('');
-    setEditRate(null);
   };
 
   // Edit Rate
