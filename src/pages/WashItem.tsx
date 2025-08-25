@@ -19,6 +19,7 @@ import CancelButton from "../components/CancelButton";
 // import Stepper from '../components/Stepper';
 import Breadcrumb from "../components/Breadcrumb";
 import EditButton from "../components/EditButton";
+import DeleteButton from "../components/DeleteButton";
 
 interface WashItemProps {
     sidebarCollapsed?: boolean;
@@ -38,7 +39,8 @@ const columns = [
 const configColumns = [
   { key: 'materialType', header: 'Material Type' },
   { key: 'detergent', header: 'Detergent' },
-  { key: 'machine', header: 'Machine' }
+  { key: 'machine', header: 'Machine' },
+  { key: 'action', header: 'Action' }
 ];
 
 const WashItem: React.FC<WashItemProps> = () => {
@@ -113,43 +115,67 @@ const WashItem: React.FC<WashItemProps> = () => {
   }, []);
 
   const handleSaveConfig = async () => {
-    const newConfig = { materialType, detergent, machine };
-    // Save to db.json in Detergents
-    await fetch('http://192.168.50.253:3005/Detergents', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newConfig)
-    });
-    setConfigurations([...configurations, newConfig]);
-    setShowModal(false);
-    setMaterialType('');
-    setDetergent('');
-    setMachine('');
+    try {
+      const newConfig = { materialType, detergent, machine };
+      
+      const response = await fetch('http://192.168.50.253:3005/Detergents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newConfig)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save configuration');
+      }
+      
+      const savedConfig = await response.json();
+      setConfigurations([...configurations, savedConfig]);
+      setShowModal(false);
+      setMaterialType('');
+      setDetergent('');
+      setMachine('');
+      toast.success('Configuration saved successfully');
+    } catch (error) {
+      console.error('Error saving configuration:', error);
+      toast.error('Failed to save configuration: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
   };
 
   // Update washedLinenItems entry with new info
   const handleSaveInsideWash = async () => {
     if (!selectedItem) return;
-    const updated = {
-      ...selectedItem,
-      detergent: selectedDetergent,
-      machine: selectedMachine,
-      timeTaken,
-      washing: true // Mark as being washed
-    };
-    // PATCH the item in washedLinenItems
-    await fetch(`http://192.168.50.253:3005/washedLinenItems/${selectedItem.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ detergent: selectedDetergent, machine: selectedMachine, timeTaken, washing: true })
-    });
-    // Update local state
-    setData(data.map((item: any) => item.id === selectedItem.id ? updated : item));
-    setShowInsideWashModal(false);
-    setSelectedItem(null);
-    setSelectedDetergent('');
-    setSelectedMachine('');
-    setTimeTaken('');
+    
+    try {
+      const updated = {
+        ...selectedItem,
+        detergent: selectedDetergent,
+        machine: selectedMachine,
+        timeTaken,
+        washing: true // Mark as being washed
+      };
+      
+      const response = await fetch(`http://192.168.50.253:3005/washedLinenItems/${selectedItem.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update wash details');
+      }
+      
+      const responseData = await response.json();
+      setData(data.map((item: any) => item.id === selectedItem.id ? responseData : item));
+      setShowInsideWashModal(false);
+      setSelectedItem(null);
+      setSelectedDetergent('');
+      setSelectedMachine('');
+      setTimeTaken('');
+      toast.success('Wash details updated successfully');
+    } catch (error) {
+      console.error('Error updating wash details:', error);
+      toast.error('Failed to update wash details: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
   };
   // Move item to OutsideWashedItems and remove from washedLinenItems
   const handleOutsideWash = async (row: any) => {
@@ -180,21 +206,125 @@ const WashItem: React.FC<WashItemProps> = () => {
   // Save edited item
   const handleEditSave = async () => {
     if (!editItem) return;
-    const updated = {
-      ...editItem,
-      ...editFields,
-    };
-    // PATCH the item in washedLinenItems
-    await fetch(`http://192.168.50.253:3005/washedLinenItems/${editItem.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editFields)
-    });
-    // Update local state
-    setData(data.map((item: any) => item.id === editItem.id ? updated : item));
-    setShowEditModal(false);
-    setEditItem(null);
+    
+    try {
+      const updatedData = {
+        ...editItem,
+        ...editFields,
+      };
+      
+      const response = await fetch(`http://192.168.50.253:3005/washedLinenItems/${editItem.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedData)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update item');
+      }
+      
+      const responseData = await response.json();
+      setData(data.map((item: any) => item.id === editItem.id ? responseData : item));
+      setShowEditModal(false);
+      setEditItem(null);
+      toast.success('Item updated successfully');
+    } catch (error) {
+      console.error('Error updating item:', error);
+      toast.error('Failed to update item: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
   };
+
+
+  // Delete washed item
+  const handleDeleteWashedItem = async (item: any) => {
+    if (!window.confirm('Are you sure you want to delete this washed item?')) return;
+    
+    try {
+      const response = await fetch(`http://192.168.50.253:3005/washedLinenItems/${item.id}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete item');
+      }
+      
+      setData(data.filter((dataItem: any) => dataItem.id !== item.id));
+      toast.success('Washed item deleted successfully');
+    } catch (error) {
+      console.error('Error deleting washed item:', error);
+      toast.error('Failed to delete washed item: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
+  };
+
+  // Edit and delete handlers for detergent configurations
+  const [editConfig, setEditConfig] = useState<any>(null);
+  const [showEditConfigModal, setShowEditConfigModal] = useState(false);
+  const [editConfigFields, setEditConfigFields] = useState({
+    materialType: '',
+    detergent: '',
+    machine: '',
+  });
+
+  const handleEditConfig = (config: any) => {
+    setEditConfig(config);
+    setEditConfigFields({
+      materialType: config.materialType || '',
+      detergent: config.detergent || '',
+      machine: config.machine || '',
+    });
+    setShowEditConfigModal(true);
+  };
+
+  const handleSaveEditConfig = async () => {
+    if (!editConfig) return;
+    
+    try {
+      const response = await fetch(`http://192.168.50.253:3005/Detergents/${editConfig.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editConfigFields)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update configuration');
+      }
+      
+      const updatedConfig = await response.json();
+      setConfigurations(configurations.map((config: any) => 
+        config.id === editConfig.id ? updatedConfig : config
+      ));
+      
+      setShowEditConfigModal(false);
+      setEditConfig(null);
+      toast.success('Configuration updated successfully');
+    } catch (error) {
+      console.error('Error updating configuration:', error);
+      toast.error('Failed to update configuration: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
+  };
+
+  const handleDeleteConfig = async (config: any) => {
+    if (!window.confirm('Are you sure you want to delete this configuration?')) return;
+    
+    try {
+      const response = await fetch(`http://192.168.50.253:3005/Detergents/${config.id}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete configuration');
+      }
+      
+      setConfigurations(configurations.filter((c: any) => c.id !== config.id));
+      toast.success('Configuration deleted successfully');
+    } catch (error) {
+      console.error('Error deleting configuration:', error);
+      toast.error('Failed to delete configuration: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
+  };
+
+  
+
 
   const renderAction = (row: any) => {
     if (row.washing) {
@@ -202,7 +332,7 @@ const WashItem: React.FC<WashItemProps> = () => {
         <>
 
         <div className="d-flex align-items-center">
-        <button
+          <button
             className="icon-btn washing"
             disabled
             aria-label="Washing"
@@ -211,6 +341,7 @@ const WashItem: React.FC<WashItemProps> = () => {
             <span title="Washing"><MdLocalLaundryService color="#0582ac" size={24} style={{ filter: 'drop-shadow(0 2px 4px #b3e0f7)' }} /></span>
           </button>
           <EditButton onClick={() => handleEditClick(row)} />
+          <DeleteButton onClick={() => handleDeleteWashedItem(row)} />
         </div>
           
         </>
@@ -298,7 +429,18 @@ const WashItem: React.FC<WashItemProps> = () => {
                 <Searchbar value={configSearchTerm} onChange={e => setConfigSearchTerm(e.target.value)} />
               </div>
             </div>
-            <Table columns={configColumns} data={filteredConfigs} />
+            {/* <Table columns={configColumns} data={filteredConfigs} /> */}
+            <Table columns={configColumns} data={filteredConfigs.map(config => ({
+              ...config,
+              action: (
+                <>
+                  <div className="d-flex">
+                    <EditButton onClick={() => handleEditConfig(config)} />
+                    <DeleteButton onClick={() => handleDeleteConfig(config)} />
+                  </div>
+                </>
+              )
+            }))} />
             
           </>
         )}
@@ -460,6 +602,57 @@ const WashItem: React.FC<WashItemProps> = () => {
                   value={editFields.timeTaken}
                   onChange={e => setEditFields({ ...editFields, timeTaken: e.target.value })}
                   min={1}
+                />
+              </div>
+            </>
+          )}
+        </CustomModal>
+
+        {/* Edit Configuration Modal */}
+        <CustomModal
+          show={showEditConfigModal}
+          onHide={() => {
+            setShowEditConfigModal(false);
+            setEditConfig(null);
+          }}
+          title="Edit Configuration"
+          footer={
+            <>
+              <CancelButton text="Cancel" onClick={() => {
+                setShowEditConfigModal(false);
+                setEditConfig(null);
+              }} />
+              <ButtonWithGradient text="Save" onClick={handleSaveEditConfig} />
+            </>
+          }
+        >
+          {editConfig && (
+            <>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{fontSize:'14px'}}>Material Type</label>
+                <input
+                  type="text"
+                  value={editConfigFields.materialType}
+                  onChange={e => setEditConfigFields({ ...editConfigFields, materialType: e.target.value })}
+                  className="form-control"
+                />
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{fontSize:'14px'}}>Detergent</label>
+                <input
+                  type="text"
+                  value={editConfigFields.detergent}
+                  onChange={e => setEditConfigFields({ ...editConfigFields, detergent: e.target.value })}
+                  className="form-control"
+                />
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{fontSize:'14px'}}>Machine</label>
+                <input
+                  type="text"
+                  value={editConfigFields.machine}
+                  onChange={e => setEditConfigFields({ ...editConfigFields, machine: e.target.value })}
+                  className="form-control"
                 />
               </div>
             </>

@@ -154,7 +154,7 @@ const VendorMapping: React.FC<VendorMapProps> = () => {
       setVendorAddress('');
     } catch (error) {
       console.error('Error saving vendor:', error);
-      toast.error('Network error: ' + error.message);
+      toast.error('Network error: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 
@@ -256,7 +256,7 @@ const VendorMapping: React.FC<VendorMapProps> = () => {
       toast.success(editRate ? 'Rate updated successfully' : 'Rate mapping created successfully');
     } catch (error) {
       console.error('Error saving rate:', error);
-      toast.error('Network error: ' + error.message);
+      toast.error('Network error: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 
